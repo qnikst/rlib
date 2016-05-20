@@ -1,0 +1,15 @@
+[package]
+name = "rlib"
+version = "0.1.0"
+authors = ["Alexander Vershilov <alexander.vershilov@gmail.com>"]
+license = "BSD"
+repository = "https://github.com/qnikst/rlib"
+description = """
+Library for steamless interporability with R-lang runtime.
+"""
+
+[dependencies]
+libc = "*"
+
+[[bin]]
+name="example"
