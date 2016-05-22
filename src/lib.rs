@@ -12,9 +12,6 @@
 //!
 extern crate libc;
 
-
-
-
 pub mod internal;
 pub mod interpreter;
 pub mod sexp;

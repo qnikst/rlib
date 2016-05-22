@@ -32,7 +32,7 @@ pub enum ParseStatus {
 
 /// Type of the R Value
 #[repr(C)]
-#[derive(Debug)]
+#[derive(Debug,PartialEq, Eq)]
 pub enum SEXPTYPE {
     /// NULL
     NILSXP = 0,
@@ -121,6 +121,7 @@ extern {
 
     /// Find length of the R value.
     pub fn Rf_length(sexp: *const R) -> i32;
+    pub fn TYPEOF(sexp: *const R) -> SEXPTYPE;
     pub fn VECTOR_ELT(sexp: *const R, n: i32) -> *mut R;
 
     pub fn Rf_cons(head: *const R, tail: *const R) -> *mut R;
@@ -134,7 +135,8 @@ extern {
     pub fn Rf_asReal(a: *const R) -> c_double;
 
     // SEXP access
-    pub fn REAL(a: *const R) -> *mut c_double;
+    pub fn REAL(a: *mut R) -> *mut c_double;
+    pub fn INTEGER(a: *mut R) -> *mut i32;
 
     pub static R_Interactive: i32;
     pub static R_NilValue: *const R;

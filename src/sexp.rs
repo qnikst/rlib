@@ -9,6 +9,7 @@
 //!
 //! TBD
 use internal::*;
+use std::slice;
 
 /// S-Expression that wraps mutable R variable.
 ///
@@ -81,5 +82,27 @@ impl IntoIterator for SEXP {
         let SEXP(ptr) = self;
         let l = unsafe { Rf_length(ptr) };
         RIterator{current: 0, length: l, sexp:ptr}
+    }
+}
+
+/// /O(1)/ Safely provide native access to REAL SEXP contents.
+///
+/// Check if SEXP contains reals and create slice to raw elements access if so.
+pub fn double<'a>(sexp: &SEXP) -> Option<&'a mut [f64]> {
+    unsafe {
+    if TYPEOF(sexp.asR()) == SEXPTYPE::REALSXP {
+            Some(slice::from_raw_parts_mut(REAL(sexp.asR()), Rf_length(sexp.asR()) as usize))
+    } else { None }
+    }
+}
+
+/// /O(1)/ Safely provice native access to INT vector contents.
+///
+/// Check if SEXP containts ints and create slice to raw elements access if so.
+pub fn int<'a>(sexp: &SEXP) -> Option<&'a mut [i32]> {
+    unsafe {
+    if TYPEOF(sexp.asR()) == SEXPTYPE::INTSXP {
+            Some(slice::from_raw_parts_mut(INTEGER(sexp.asR()), Rf_length(sexp.asR()) as usize))
+    } else { None }
     }
 }
