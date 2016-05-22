@@ -5,7 +5,7 @@ extern crate libc;
 
 
 use rlib::interpreter;
-use rlib::sexp::{SEXP,preserve};
+use rlib::sexp::{preserve, AsR};
 use rlib::internal::*;
 
 use std::mem;
@@ -14,10 +14,9 @@ use std::mem;
 pub extern "C" fn fn_test(a: *mut R, b: *mut R) -> *mut R {
     unsafe {
       let result = preserve(Rf_allocVector(SEXPTYPE::REALSXP, 1));
-      let SEXP(r) = result;
-      let v = REAL(r);
+      let v = REAL(result.asR());
       *v.offset(0) = Rf_asReal(a) + Rf_asReal(b);
-      r
+      result.asR()
     }
 }
 
@@ -38,25 +37,19 @@ fn main() {
         println!("alloc-vec");
         let a3  = preserve(Rf_allocVector(SEXPTYPE::REALSXP, 1));
         println!("unwrap");
-        let SEXP(r3) = a3;
-        println!("real");
-        let d3 = REAL(r3);
+        let d3 = REAL(a3.asR());
         println!("offset");
         *d3.offset(0) = 3.0;
 
         println!("alloc-vec");
         let a5  = preserve(Rf_allocVector(SEXPTYPE::REALSXP, 1));
         println!("unwrap");
-        let SEXP(r5) = a5;
-        println!("real");
-        let d5 = REAL(r5);
+        let d5 = REAL(a5.asR());
         println!("offset");
         *d5.offset(0) = 5.0;
 
         println!("unwrap");
-        let SEXP(pe) = ext;
-        println!("lang4");
-        let val = preserve(Rf_lang4(r.sexp_call,pe, r3, r5));
+        let val = preserve(Rf_lang4(r.sexp_call,ext.asR(), a3.asR(), a5.asR()));
 
         println!("eval");
         let output = r.try_eval(&val, r.global_env()).unwrap();
@@ -65,14 +58,12 @@ fn main() {
         // Doesn't work
         let z = preserve({ 
             let a7  = preserve(Rf_allocVector(SEXPTYPE::REALSXP, 1));
-            let SEXP(r7) = a7;
-            let d7 = REAL(r7);
+            let d7 = REAL(a7.asR());
             *d7.offset(0) = 7.0;
-            r7
+            a7.asR()
             });
-        let SEXP(pz) = z;
         let a100  = preserve(Rf_allocVector(SEXPTYPE::REALSXP, 100));
-        let val = preserve(Rf_lang4(r.sexp_call, pe, r3, pz));
+        let val = preserve(Rf_lang4(r.sexp_call, ext.asR(), a3.asR(), z.asR()));
         let output = r.try_eval(&val, r.global_env()).unwrap();
         r.print_value(&output);
     }

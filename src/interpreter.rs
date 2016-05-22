@@ -44,10 +44,9 @@ impl Interpreter {
     }
 
     pub fn try_eval(&self, expression: &SEXP, environment: *mut R) -> Option<SEXP> {
-        let SEXP(pexpression) = *expression;
         let mut result : i32 = 0;
         let v = unsafe {
-            R_tryEval(pexpression, environment, &mut result)
+            R_tryEval(expression.asR(), environment, &mut result)
         };
         match result {
             0 => Some(preserve(v)),
@@ -56,9 +55,8 @@ impl Interpreter {
     }
 
     pub fn print_value(&self, sexp: &SEXP) {
-        let SEXP(ptr) = *sexp;
         unsafe {
-            Rf_PrintValue(ptr);
+            Rf_PrintValue(sexp.asR());
         }
     }
 
@@ -67,10 +65,8 @@ impl Interpreter {
     }
 
     pub fn lcons(&self, a: &SEXP, b: &SEXP) -> SEXP {
-        let SEXP(pa) = *a;
-        let SEXP(pb) = *b;
         unsafe {
-            preserve(Rf_lcons(pa, pb))
+            preserve(Rf_lcons(a.asR(), b.asR()))
         }
     }
 

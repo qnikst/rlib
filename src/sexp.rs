@@ -10,11 +10,14 @@
 //! TBD
 use internal::*;
 
-
 /// S-Expression that wraps mutable R variable.
 ///
 /// See GC section for more details.
-pub struct SEXP(pub *mut R);
+pub struct SEXP(*mut R);
+
+pub trait AsR {
+    fn asR(&self) -> *mut R;
+}
 
 impl Drop for SEXP {
     fn drop(&mut self) {
@@ -23,6 +26,13 @@ impl Drop for SEXP {
         unsafe {
             R_ReleaseObject(x);
         }
+    }
+}
+
+impl AsR for SEXP {
+    fn asR(&self) -> *mut R {
+        let SEXP(x) = *self;
+        x
     }
 }
 
