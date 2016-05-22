@@ -109,6 +109,11 @@ extern {
 
     pub fn Rf_protect(input: *mut R) -> *mut R;
     pub fn Rf_unprotect(num: i32) -> ();
+
+    pub fn R_PreserveObject(obj: *mut R);
+    pub fn R_ReleaseObject(obj: *mut R);
+
+    // evaluation
     pub fn Rf_PrintValue(sexp: *const R);
     pub fn Rf_eval(expression: *const R, environment: *mut R) -> *mut R;
 

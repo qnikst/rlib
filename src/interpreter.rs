@@ -5,7 +5,6 @@
 //!
 //! TBD
 use std::ffi::{CString};
-use libc::c_void;
 
 use sexp::*;
 use internal::*;
@@ -36,7 +35,7 @@ impl Interpreter {
               let str = Rf_protect(Rf_mkString(cstr.as_ptr()));
               let result = R_ParseVector(str, max_results, &mut status, R_NilValue);
               Rf_unprotect(1);
-              protect(result)
+              preserve(result)
         };
         match status {
             ParseStatus::PARSE_OK => Ok(parsed),
@@ -51,7 +50,7 @@ impl Interpreter {
             R_tryEval(pexpression, environment, &mut result)
         };
         match result {
-            0 => Some(protect(v)),
+            0 => Some(preserve(v)),
             _ => None
         }
     }
@@ -71,22 +70,9 @@ impl Interpreter {
         let SEXP(pa) = *a;
         let SEXP(pb) = *b;
         unsafe {
-            protect(Rf_lcons(pa, pb))
+            preserve(Rf_lcons(pa, pb))
         }
     }
-
-    pub fn wrap_static(&self, pf: extern "C" fn(*mut c_void) -> (*mut c_void)) -> SEXP {
-        let value = unsafe {
-            let SEXP(out) = protect(R_MakeExternalPtr(pf, self.sexp_nativesym, R_NilValue));
-            let SEXP(value) = protect(Rf_lang3(self.sexp_call, out, R_DotsSymbol));
-            let SEXP(formals) = protect(Rf_cons(R_MissingArg, R_NilValue));
-            SET_TAG(formals, R_DotsSymbol);
-            let SEXP(result) = protect(Rf_lang4(self.sexp_function, formals, value, R_NilValue));
-            result
-        };
-        protect(value)
-    }
-
 
 }
 
@@ -103,4 +89,3 @@ pub fn new() -> Option<Interpreter> {
                    , sexp_function: s_function
                    , sexp_nativesym: s_native})
 }
-

@@ -10,6 +10,7 @@
 //! TBD
 use internal::*;
 
+
 /// S-Expression that wraps mutable R variable.
 ///
 /// See GC section for more details.
@@ -18,21 +19,25 @@ pub struct SEXP(pub *mut R);
 impl Drop for SEXP {
     fn drop(&mut self) {
         println!("DROP!");
+        let SEXP(x) = *self;
         unsafe {
-            Rf_unprotect(1);
+            R_ReleaseObject(x);
         }
     }
 }
 
-/// /O(1)/ Protect R object for later use.
+/// /O(n)/ Protect R object for later use.
+///
+/// /n/ denotes a number of elements protected in that way.
 ///
 /// Protect is used to wrap raw R object into SEXP and add
 /// value to the protection stack, this guarantee that value
 /// will not be freed by R GC until we will not exit rust (!) scope.
 ///
 /// See GC section for more details.
-pub fn protect(sexp:*mut R) -> SEXP {
-    unsafe { SEXP(Rf_protect(sexp)) }
+pub fn preserve(sexp:*mut R) -> SEXP {
+    unsafe { R_PreserveObject(sexp) }
+    SEXP(sexp)
 }
 
 /// Iterator over values.
@@ -50,7 +55,7 @@ impl Iterator for RIterator {
             let c = self.current;
             self.current+=1;
             unsafe {
-                Some(protect(VECTOR_ELT(self.sexp, c))) //here we should just return *R with corrent lifetime
+                Some(preserve(VECTOR_ELT(self.sexp, c))) //here we should just return *R with corrent lifetime
             }
         } else {
             None
