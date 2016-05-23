@@ -106,6 +106,7 @@ extern {
     pub fn Rf_allocVector(type_: SEXPTYPE, size: i32) -> *mut R;
 
     pub fn R_MakeExternalPtr(f: extern "C" fn(*mut c_void) -> *mut c_void, a: *const R, b: *const R) -> *mut R;
+    pub fn R_ExternalPtrAddr(f: *mut R) -> *mut c_void;
 
     pub fn Rf_protect(input: *mut R) -> *mut R;
     pub fn Rf_unprotect(num: i32) -> ();
@@ -130,6 +131,7 @@ extern {
 
     pub fn Rf_lang3(a: *const R, b: *const R, c: *const R) -> *mut R;
     pub fn Rf_lang4(a: *const R, b: *const R, c: *const R, d: *const R) -> *mut R;
+    pub fn Rf_lang5(a: *const R, b: *const R, c: *const R, d: *const R, e: *const R) -> *mut R;
 
     //access
     pub fn Rf_asReal(a: *const R) -> c_double;
